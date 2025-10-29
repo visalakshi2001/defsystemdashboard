@@ -234,13 +234,7 @@ def project_form(mode, *, json_dir: str | None = None):
                         # Do not fail the whole materialization if one file is bad
                         print(f"CSV Conversion Error: Failed to convert {dest.name}: {e}")
                         logger.info(f"CSV Conversion Error: Failed to convert {dest.name}: {e}")
-                # project = {
-                #     "id": None,  # filled by caller to keep existing numbering logic, if needed
-                #     "name": name.strip(),
-                #     "description": description,
-                #     "views": ["Home Page"] + list(views),
-                #     "folder": str(project_folder),
-                # }
+
                 project = {
                     "id": None,
                     "name": name.strip(),
@@ -298,8 +292,9 @@ def project_form(mode, *, json_dir: str | None = None):
 
                 st.toast(f"Dashboard **{project['name']}** created.")
                 st.rerun()
-    # IMPROVE THIS!!!
+
     if mode == "crud_dashboard":
+        # Make a custom css style for the Save project button inside this option
         st.markdown("""
             <style>
             .stForm:has(span.red_border_button) .stFormSubmitButton button {
@@ -320,16 +315,13 @@ def project_form(mode, *, json_dir: str | None = None):
         # Remove "Home Page" from the options to avoid mutation of default tab
         current_views = [v for v in details["views"] if v != "Home Page"]
 
-        st.write("Edit project details")
+        st.markdown("<h2>Edit project details</h2>", unsafe_allow_html=True)
 
-        retained_profile = st.session_state.get("retained_profile")
-        st.write(retained_profile)
+        retained_profile = details["profile"]
         if retained_profile:
             profile_views = DASHBOARD_PROFILES.get(retained_profile, {}).get("views", {})
-        
         else:
             profile_views = VIEW_OPTIONS
-        st.write(profile_views)
 
         with st.form("edit_proj_form"):
             st.markdown("<span class='red_border_button'></span>", unsafe_allow_html=True)
