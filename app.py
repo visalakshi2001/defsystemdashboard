@@ -71,7 +71,7 @@ def rerun_flag_check_function_calls():
         # If the user clicked "Create Dashboard" in retained JSON flow, show the dashboard creation form
         project_form(mode="from_retained")
     if st.session_state["create_dashboard_from_uploads"]:
-        project_form(project_form(mode="from_uploads"))
+        project_form(mode="from_uploads")
 
 
 def panel():
@@ -117,13 +117,13 @@ def panel():
         st.divider()
         # Replace the single "New Project" button with the two buttons below
         st.caption("<span style='color: rgba(0,0,0,1);'>Dashboard Preferences</span>", unsafe_allow_html=True)
-        if st.button("New project using OML file", icon="🟪", use_container_width=True):
+        if st.button("New project", icon="💼", use_container_width=True):
             build_oml_form()
         #### HIDDEN UNTIL NECESSARY
-        if st.button("New project using resultant JSON files", icon="🔣", use_container_width=True):
+        if st.button("New project using JSON files", icon="🆕", use_container_width=True):
             new_project_from_json_form()
             # st.info("The JSON-based creation flow will be implemented in the next step.")
-        if st.button("Edit config of current selected project", icon="➰", use_container_width=True):
+        if st.button("Edit project", icon="✒️", use_container_width=True):
             project_form(mode="crud_dashboard")
         
         st.divider()
@@ -148,20 +148,17 @@ def show_tab(tab_name, project):
         # Normalize view/tab name to a module-like identifier
         modname = view_name_to_module_name(tab_name)
         candidate = f"{module_prefix}.{modname}"
-        mod = importlib.import_module(candidate)
         try:
             mod = importlib.import_module(candidate)
             if hasattr(mod, "render"):
-                # If module exists and exposes render, delegate to it
                 mod.render(project)
                 return
         except Exception as e:
-            # Fail silently and fall back to built-in handlers.
-            # Print to console/log for debugging (avoids spamming the UI).
+            # Failed to import profile-specific module — fall through to built-in handlers
             print(f"[debug] dynamic import failed for '{candidate}': {e}")
 
     else:
-    # ---- 1.  delegated views  ------------------------------------------------
+        # ---- 1.  delegated views  ------------------------------------------------
         if tab_name == "Home Page":
             homepage.render(project)          # ./homepage.py
             return
@@ -184,17 +181,15 @@ def show_tab(tab_name, project):
             issueswarnings.render(project)
             return
 
-
-    # ---- 2.  generic fallback for other tabs  ---------------------------
-    folder = project["folder"]
-    for base in required_files_for_view(tab_name, project.get("profile")):
-    # for base in DATA_TIES.get(tab_name, []):
-        csv_path = os.path.join(folder, f"{base}.csv")
-        if os.path.exists(csv_path):
-            df = pd.read_csv(csv_path)
-            st.dataframe(df, use_container_width=True)
-        else:
-            st.info(f"{base}.json data is not available - upload it via **🪄 Edit Data** button")
+        # ---- 2.  generic fallback for other tabs  ---------------------------
+        folder = project["folder"]
+        for base in required_files_for_view(tab_name, project.get("profile")):
+            csv_path = os.path.join(folder, f"{base}.csv")
+            if os.path.exists(csv_path):
+                df = pd.read_csv(csv_path)
+                st.dataframe(df, use_container_width=True)
+            else:
+                st.info(f"{base}.json data is not available - upload it via **🪄 Edit Data** button")
      
 def main():
     projectlist = st.session_state['projectlist']
@@ -208,12 +203,14 @@ def main():
         st.write("Create your first project to get started.")
     else:
         with st.container():
-            col1, col2 = st.columns([0.9, 0.15])
-            with col1:
-                st.header(project["name"], divider='violet')
-            with col2:
-                if st.button("🪄 Edit Data", type='primary'):
-                    replace_data(project) 
+            # !!! HIDING EDIT DATA BUTTON UNTIL REQUIRED !!!
+            # col1, col2 = st.columns([0.9, 0.15])
+            # with col1:
+            #     st.header(project["name"], divider='violet')
+            # with col2:
+            #     if st.button("🪄 Edit Data", type='primary'):
+            #         replace_data(project) 
+            st.header(project["name"], divider='violet')
         
         if project['views'] != []:
             VIEWTABS = st.tabs(project['views'])

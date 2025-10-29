@@ -105,6 +105,29 @@ DASHBOARD_PROFILES = {
             "Home Page": ["TripleCount"],
         },
     },
+    "Catapult": {
+        "data": [
+            "Assemblies",
+            "Components",
+            "Subsystems",
+            "MissionArchitecture",
+            "FunctionalArchitecture",
+            "Requirements",
+            "EnvEntities",
+            "IPTStructure"
+        ],
+        "views": [
+            "Architecture",
+            "Requirements",
+        ],
+        "module_prefix": "catapultdashboardsrc",
+        "view_data_ties": {
+            "Architecture": ["MissionArchitecture", "EnvEntities", "IPTStructure", "FunctionalArchitecture", "Subsystems", "Assemblies", "Components"],
+            "Requirements": ["Requirements"],
+            "Home Page": ["TripleCount"],
+        },
+    },
+
     # Add additional profiles here as needed.
 }
 # --------------------------------------------------------------------------- #
@@ -275,7 +298,7 @@ def project_form(mode, *, json_dir: str | None = None):
 
                 st.toast(f"Dashboard **{project['name']}** created.")
                 st.rerun()
-
+    # IMPROVE THIS!!!
     if mode == "crud_dashboard":
         st.markdown("""
             <style>
@@ -299,13 +322,23 @@ def project_form(mode, *, json_dir: str | None = None):
 
         st.write("Edit project details")
 
+        retained_profile = st.session_state.get("retained_profile")
+        st.write(retained_profile)
+        if retained_profile:
+            profile_views = DASHBOARD_PROFILES.get(retained_profile, {}).get("views", {})
+        
+        else:
+            profile_views = VIEW_OPTIONS
+        st.write(profile_views)
+
         with st.form("edit_proj_form"):
             st.markdown("<span class='red_border_button'></span>", unsafe_allow_html=True)
             name = st.text_input("Project Name", value=details['name'], key="edit_project_name")
             description = st.text_area("Description", value=details['description'], key="edit_project_description")
+            
             views = st.multiselect(
                 "Select Views", 
-                options=VIEW_OPTIONS,
+                options=profile_views,
                 default=current_views,
                 key="edit_project_views")
 
