@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import streamlit as st
 from projectdetail import DATA_TIES       # reuse the same mapping
-from issueswarnings import issuesinfo
+from legoroversrc.issueswarnings import issuesinfo
 
 def render(project: dict) -> None:
 

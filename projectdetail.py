@@ -69,7 +69,7 @@ DASHBOARD_PROFILES = {
             "Test Results",
             "Warnings/Issues",
         ],
-        "module_prefix": None,  # use global view modules
+        "module_prefix": "legoroversrc",  # use legoroversrc view modules
         # Optional per-view data-ties overrides for this profile.
         # If not present, global DATA_TIES entries are used.
         "view_data_ties": {
@@ -679,8 +679,11 @@ def build_oml_form():
                                 required_views = DASHBOARD_PROFILES[chosen_profile].get("views", [])
                                 for v in required_views:
                                     required_files = set(required_files_for_view(v, chosen_profile))
-                                    # If a view has no declared required files, treat as not allowed (or you can allow by policy)
+                                    # Views with no required files are always allowed; views with required files need all files present
                                     if required_files and required_files.issubset(set(present_basenames)):
+                                        allowed_views.append(v)
+                                        suggested_views.append(v)
+                                    elif v and (not required_files):
                                         allowed_views.append(v)
                                         suggested_views.append(v)
                                 st.session_state["retained_profile"] = chosen_profile
@@ -802,8 +805,11 @@ def new_project_from_json_form():
             required_views = DASHBOARD_PROFILES[chosen_profile].get("views", [])
             for v in required_views:
                 required_files = set(required_files_for_view(v, chosen_profile))
-                # If a view has no declared required files, treat as not allowed (or you can allow by policy)
+                # Views with no required files are always allowed; views with required files need all files present
                 if required_files and required_files.issubset(set(present_basenames)):
+                    allowed_views.append(v)
+                    suggested_views.append(v)
+                elif v and (not required_files):
                     allowed_views.append(v)
                     suggested_views.append(v)
             st.session_state["retained_profile"] = chosen_profile

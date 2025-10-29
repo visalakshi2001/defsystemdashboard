@@ -1,7 +1,7 @@
 import os
 import streamlit as st
 import pandas as pd
-from issueswarnings import issuesinfo
+from legoroversrc.issueswarnings import issuesinfo
 
 STANDARD_MSG = "{}.json data is not available – upload it via **Edit Data**"
 

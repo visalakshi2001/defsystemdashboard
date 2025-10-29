@@ -3,16 +3,10 @@ import pandas as pd
 import streamlit as st
 import importlib
 
-from projectdetail import (DATA_TIES, VIEW_OPTIONS, REPORTS_ROOT, 
-                           project_form, replace_data, error_inspector_form, 
+from projectdetail import (DATA_TIES, VIEW_OPTIONS, REPORTS_ROOT,
+                           project_form, replace_data, error_inspector_form,
                            required_files_for_view, build_oml_form, new_project_from_json_form)
 import homepage
-import architecture
-import requirements
-import testfacility
-import teststrategy
-import testresults
-import issueswarnings
 
 from utilities import _run_installation_if_streamlit_env, view_name_to_module_name
 
@@ -137,12 +131,18 @@ def show_tab(tab_name, project):
     """
     Dispatch each tab to its own view module.
     Preference order:
-      1) If project provides a module_prefix, attempt dynamic import of
+      1) Home Page always uses centralized root homepage.py
+      2) If project provides a module_prefix, attempt dynamic import of
          {module_prefix}.{view_module_name} and call its render(project).
-      2) Fall back to the built-in top-level module handlers (homepage, architecture, ...).
-      3) Generic CSV preview fallback.
+      3) Fall back to dynamic import from root-level modules.
+      4) Generic CSV preview fallback.
     """
-    # ----- 0. Try dynamic import from profile-specific package ----------------
+    # ----- 0. Home Page always uses centralized root homepage.py ----------------
+    if tab_name == "Home Page":
+        homepage.render(project)
+        return
+
+    # ----- 1. Try dynamic import from profile-specific package ----------------
     module_prefix = project.get("module_prefix") if isinstance(project, dict) else None
     if module_prefix:
         # Normalize view/tab name to a module-like identifier
@@ -158,38 +158,26 @@ def show_tab(tab_name, project):
             print(f"[debug] dynamic import failed for '{candidate}': {e}")
 
     else:
-        # ---- 1.  delegated views  ------------------------------------------------
-        if tab_name == "Home Page":
-            homepage.render(project)          # ./homepage.py
-            return
-        if tab_name == "Architecture":
-            architecture.render(project)      # ./architecture.py
-            return
-        if tab_name == "Requirements":
-            requirements.render(project)
-            return
-        if tab_name == "Test Facilities":
-            testfacility.render(project)
-            return
-        if tab_name == "Test Strategy":
-            teststrategy.render(project)
-            return
-        if tab_name == "Test Results":
-            testresults.render(project)
-            return
-        if tab_name == "Warnings/Issues":
-            issueswarnings.render(project)
-            return
+        # ---- 2. Try dynamic import from root-level modules  ----------------
+        modname = view_name_to_module_name(tab_name)
+        try:
+            mod = importlib.import_module(modname)
+            if hasattr(mod, "render"):
+                mod.render(project)
+                return
+        except Exception as e:
+            # Failed to import root-level module — fall through to generic fallback
+            print(f"[debug] root-level import failed for '{modname}': {e}")
 
-        # ---- 2.  generic fallback for other tabs  ---------------------------
-        folder = project["folder"]
-        for base in required_files_for_view(tab_name, project.get("profile")):
-            csv_path = os.path.join(folder, f"{base}.csv")
-            if os.path.exists(csv_path):
-                df = pd.read_csv(csv_path)
-                st.dataframe(df, use_container_width=True)
-            else:
-                st.info(f"{base}.json data is not available - upload it via **🪄 Edit Data** button")
+    # ---- 3. Generic fallback for other tabs  ---------------------------
+    folder = project["folder"]
+    for base in required_files_for_view(tab_name, project.get("profile")):
+        csv_path = os.path.join(folder, f"{base}.csv")
+        if os.path.exists(csv_path):
+            df = pd.read_csv(csv_path)
+            st.dataframe(df, use_container_width=True)
+        else:
+            st.info(f"{base}.json data is not available - upload it via **🪄 Edit Data** button")
      
 def main():
     projectlist = st.session_state['projectlist']
