@@ -532,7 +532,7 @@ from pathlib import Path
 from streamlit_tree_select import tree_select
 from utilities import _build_tree, _fetch_file_bytes, _zip_files, _collect_selected_files
 
-@st.dialog("🟪 Build OML file compiled from Violet", width="large")
+@st.dialog("🟪 Build ontological file compiled from Violet", width="large")
 def build_oml_form():
     """
     Upload a *.oml bundle → run Gradle build in omltemplateproject →
