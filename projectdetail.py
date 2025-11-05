@@ -17,7 +17,8 @@ from utilities import (
     match_profile_from_basenames,
     view_name_to_module_name,
     logger,
-    consolidate_result_aliases
+    consolidate_result_aliases,
+    get_reports_root
 )
 
 
@@ -215,8 +216,10 @@ def project_form(mode, *, json_dir: str | None = None):
                     st.error(f"A project called **{name}** already exists. Pick another name.")
                     st.stop()
 
-                # Create the project folder
-                project_folder = Path(os.path.join(REPORTS_ROOT, name.lower().replace(" ", "_")))
+                # Create the project folder (user-specific)
+                username = st.session_state.get('username')
+                user_root = get_reports_root(username)
+                project_folder = user_root / name.lower().replace(" ", "_")
                 os.makedirs(project_folder, exist_ok=True)
 
                 copied = []
@@ -349,7 +352,9 @@ def project_form(mode, *, json_dir: str | None = None):
                     st.stop()
                 
                 old_folder = details["folder"]
-                new_folder = os.path.join(REPORTS_ROOT, name.lower().replace(" ", "_"))
+                username = st.session_state.get('username')
+                user_root = get_reports_root(username)
+                new_folder = str(user_root / name.lower().replace(" ", "_"))
 
                 if old_folder != new_folder:
                     shutil.move(old_folder, new_folder)            # rename directory
@@ -410,7 +415,9 @@ def project_form(mode, *, json_dir: str | None = None):
                     st.error(f"A project called **{name}** already exists. Pick another name.")
                     st.stop()
 
-                project_folder = os.path.join(REPORTS_ROOT, name.lower().replace(" ", "_"))
+                username = st.session_state.get('username')
+                user_root = get_reports_root(username)
+                project_folder = str(user_root / name.lower().replace(" ", "_"))
                 os.makedirs(project_folder, exist_ok=True)
 
                 projectlist.append({

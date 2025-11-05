@@ -7,7 +7,7 @@ import graphviz
 import plotly.express as px
 from datetime import datetime
 from projectdetail import DATA_TIES     # just to reuse the standard message text
-from issueswarnings import issuesinfo
+from legoroversrc.warningsissues import issuesinfo
 
 STANDARD_MSG = "{}.json data is not available – upload it via **Edit Data**"
 

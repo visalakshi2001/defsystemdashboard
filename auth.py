@@ -113,7 +113,7 @@ def render_login_form():
                     st.session_state['username'] = username_input
                     st.session_state['name'] = name
 
-                    st.success(f"Welcome back, {name}!")
+                    st.toast(f"Welcome back, {name}!", icon="👏")
                     st.rerun()
                 else:
                     st.error("Username not found. Please sign up first.")

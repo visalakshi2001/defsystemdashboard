@@ -15,6 +15,18 @@ logger = logging.getLogger()
 
 REPORTS_ROOT = "reports"
 
+
+def get_reports_root(username=None):
+    """
+    Get the reports root directory for a specific user.
+    If username is provided, returns reports/<username>/
+    If username is None, returns base reports directory.
+    """
+    if username:
+        return Path(REPORTS_ROOT) / username
+    return Path(REPORTS_ROOT)
+
+
 def _fetch_file_bytes(base_dir: Path, rel_path: str) -> bytes | None:
     """Return raw bytes of a result file inside `base_dir` or None if missing."""
     fpath = (base_dir / rel_path).resolve()

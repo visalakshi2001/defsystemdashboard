@@ -3,34 +3,66 @@ import pandas as pd
 import streamlit as st
 import importlib
 
-from projectdetail import (DATA_TIES, VIEW_OPTIONS, REPORTS_ROOT,
+from projectdetail import (DATA_TIES, VIEW_OPTIONS, REPORTS_ROOT, DASHBOARD_PROFILES,
                            project_form, replace_data, error_inspector_form,
                            required_files_for_view, build_oml_form, new_project_from_json_form)
 import homepage
 
-from utilities import _run_installation_if_streamlit_env, view_name_to_module_name
+from utilities import (_run_installation_if_streamlit_env, view_name_to_module_name,
+                       get_reports_root, match_profile_from_basenames)
 import auth
 
 
 
 st.set_page_config(page_title="Dashboard", page_icon="🛰️", layout="wide")
 
-def init_session():
-    """Ensure all required session_state keys exist."""
+def init_session(username=None):
+    """
+    Ensure all required session_state keys exist.
+    If username is provided, scan user's reports folder and load existing projects.
+    """
 
     if 'projectlist' not in st.session_state:
-        st.session_state['projectlist'] = [
-                                            # {'id': 1, 
-                                            # 'name': "System Dashboard", 
-                                            # 'description': "", 
-                                            # 'views': ["Home Page"] + [v for v in VIEW_OPTIONS if v != "Home Page"], 
-                                            # 'folder': os.path.join(REPORTS_ROOT, "System Dashboard".lower().replace(" ", "_")),},
-                                            # {'id': 2, 
-                                            # 'name': "Lego Rover Dashboard", 
-                                            # 'description': "", 
-                                            # 'views': ["Home Page"] + [v for v in VIEW_OPTIONS if v != "Home Page"], 
-                                            # 'folder': os.path.join(REPORTS_ROOT, "Lego Rover Dashboard".lower().replace(" ", "_")),},
-                                        ]
+        st.session_state['projectlist'] = []
+
+        # Load user-specific projects if username provided
+        if username:
+            user_root = get_reports_root(username)
+            if user_root.exists():
+                # Scan for project folders in user's directory
+                project_folders = [d for d in user_root.iterdir() if d.is_dir() and not d.name.startswith('.')]
+
+                for idx, folder in enumerate(project_folders, start=1):
+                    # Detect available data by scanning CSV files
+                    csv_files = list(folder.glob("*.csv"))
+                    csv_basenames = [f.stem for f in csv_files]
+
+                    # Match profile based on available data
+                    profile_matches = match_profile_from_basenames(csv_basenames, DASHBOARD_PROFILES)
+
+                    # Use best matching profile (highest coverage)
+                    if profile_matches:
+                        profile_name, coverage, present_count, total = profile_matches[0]
+                        profile_info = DASHBOARD_PROFILES[profile_name]
+
+                        # Build views list: Home Page + profile's views
+                        views = ["Home Page"] + profile_info.get("views", [])
+                        module_prefix = profile_info.get("module_prefix")
+
+                        # Create human-readable name from folder name
+                        display_name = folder.name.replace("_", " ").title()
+
+                        project = {
+                            "id": idx,
+                            "name": display_name,
+                            "description": f"Profile: {profile_name}",
+                            "views": views,
+                            "folder": str(folder),
+                            "profile": profile_name,
+                            "module_prefix": module_prefix,
+                        }
+                        st.session_state['projectlist'].append(project)
+
     if 'currproject' not in st.session_state:
         st.session_state['currproject'] = None
 
@@ -235,7 +267,13 @@ def main():
 def main_app():
     """Main application logic - only accessible when authenticated."""
     _run_installation_if_streamlit_env()  # Ensure Java/Gradle are installed
-    init_session()
+
+    # Get current authenticated user
+    username = st.session_state.get('username')
+
+    # Initialize session with user-specific projects
+    init_session(username)
+
     rerun_flag_check_function_calls()
     panel()
     main()
