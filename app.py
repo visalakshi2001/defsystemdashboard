@@ -139,6 +139,12 @@ def panel():
                 if st.button("New project using JSON files", icon="🔣", use_container_width=True):
                     new_project_from_json_form()
             # # ----------------------------
+
+        st.container(height=200, border=False)
+        st.markdown("**Having problems with ontological description?**")
+        st.caption("Upload your *reasoning.xml* file to easily breakdown the error")
+        if st.button("Inspect Error", icon="🔍"):
+            error_inspector_form()
         
         # Prevent the rest of the app (e.g., main()) from rendering when no projects exist
         st.stop()
@@ -178,8 +184,8 @@ def panel():
         
         st.divider()
         
-        st.subheader("Having problems with OML description?")
-        st.caption("Upload your *reasoning.xml* file to easily breakdown your error")
+        st.subheader("Having problems with ontological description?")
+        st.caption("Upload your *reasoning.xml* file to easily breakdown the error")
         if st.button("Inspect Error", icon="🔍"):
             error_inspector_form()
 

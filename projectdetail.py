@@ -724,12 +724,49 @@ def build_oml_form():
                 elif st.session_state.query_code == 1:
                     pass
         elif st.session_state.build_code == 1:
-            # show a button to download the reasoning.xml file from the "reports" folder of the BUILD_DIR declared in the omlbuilder and write a message
+            # Inline error inspection - automatically parse and display reasoning errors
             reasoning_file_path = BUILD_DIR / "reports" / "reasoning.xml"
             
             if reasoning_file_path.exists():
+                st.markdown("### 🔍 Reasoning Errors Detected")
+
+                # Parse the reasoning.xml file
+                try:
+                    tree = ET.parse(str(reasoning_file_path))
+                    failures = tree.findall(".//failure")
+
+                    if not failures:
+                        st.success("No violations found in reasoning.xml – the file appears clean 🎉")
+                    else:
+                        st.info(f"Found **{len(failures)}** violation(s) in your OML file:")
+
+                        # Display each violation in an expander
+                        for idx, fail_elem in enumerate(failures, start=1):
+                            data = parse_failure_block(fail_elem.text or "")
+                            if not data:
+                                st.warning(f"⚠️ Violation #{idx}: Couldn't interpret this failure block.")
+                                continue
+
+                            # Create a short preview for the expander label
+                            preview_msg = natural_language_message(data)
+                            preview = preview_msg[:80] + "..." if len(preview_msg) > 80 else preview_msg
+
+                            with st.expander(f"**Violation #{idx}**: {preview}", expanded=(idx == 1)):
+                                st.markdown(natural_language_message(data), unsafe_allow_html=True)
+                                st.dataframe(
+                                    failure_to_dataframe(data),
+                                    use_container_width=True,
+                                    hide_index=True
+                                )
+
+                except ET.ParseError as e:
+                    st.error(f"❌ XML parsing error: {e}")
+                    st.caption("The reasoning.xml file may be malformed. Try downloading it for manual inspection.")
+
+                # Still provide download button as fallback
+                st.markdown("---")
                 st.markdown("### 📝 Download Reasoning XML")
-                st.caption(":red[The build failed, but you can download the reasoning.xml and use the Error Inspector for error breakdown.]")
+                st.caption("Download the full reasoning.xml file for debugging or re-inspecting")
                 st.download_button(
                     "⬇️ Download Reasoning XML",
                     data=reasoning_file_path.read_bytes(),

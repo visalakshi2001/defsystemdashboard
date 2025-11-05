@@ -166,7 +166,7 @@ description <http://example.com/project/uaomlfile#> as SIE523 {
     instance T2_1-YumaTF_Multimeter_Precision : meas:Quantity [
         foundation:hasID "T2_1-YumaTF_Multimeter_Precision"
         foundation:hasName "T2_1-YumaTF_Multimeter_Precision"
-        foundation:specificallyDependentOn YumaTF_Multimeter
+        // foundation:specificallyDependentOn YumaTF_Multimeter
         meas:hasDimension dim:Voltage
     ]
     instance T2_1-YumaTF_Multimeter_Precision_Measurement : meas:SimpleMeasurement [
