@@ -57,8 +57,8 @@ def render_auth_page():
     - Login: User enters username only
     - Signup: User enters username, name, and optional email
     """
-    st.title("🔐 OML Dashboard")
-    st.markdown("### Welcome to the OML Ontology Modeling Dashboard")
+    st.markdown("# 🚀 Welcome to Dashboard")
+    st.write("Please login using your existing username or create a new one using sign up field")
 
     # Check if already authenticated (from session state)
     if st.session_state.get('authentication_status', False):
