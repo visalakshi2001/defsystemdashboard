@@ -9,6 +9,7 @@ from projectdetail import (DATA_TIES, VIEW_OPTIONS, REPORTS_ROOT,
 import homepage
 
 from utilities import _run_installation_if_streamlit_env, view_name_to_module_name
+import auth
 
 
 
@@ -74,7 +75,18 @@ def panel():
 
     # --- Case A: No projects yet → show Welcome page with 2 CTAs and stop ---
     if not projectlist:
-        st.title("Welcome 👋")
+        # Display user info and logout at top right
+        username = st.session_state.get('username', 'Guest')
+        name = st.session_state.get('name', username)
+
+        col1, col2 = st.columns([0.85, 0.15])
+        with col1:
+            st.title("Welcome 👋")
+        with col2:
+            st.markdown(f"**👤 {name}**")
+            if st.button("Logout", key="logout_no_projects"):
+                auth.logout()
+
         st.caption("<span style='color:rgba(0,0,0,1); font-weight: 600;'>Create your first dashboard here!</span>", unsafe_allow_html=True)
 
 
@@ -101,6 +113,18 @@ def panel():
 
     # --- Case B: Projects exist → build Sidebar with selector + 2 creation buttons ---
     with st.sidebar:
+        # Display user info and logout at top of sidebar
+        username = st.session_state.get('username', 'Guest')
+        name = st.session_state.get('name', username)
+        project_count = len(projectlist)
+
+        st.markdown(f"### 👤 {name}")
+        st.caption(f"@{username} • {project_count} dashboard(s)")
+
+        if st.button("Logout", key="logout_with_projects", use_container_width=True):
+            auth.logout()
+
+        st.divider()
         st.header("Dashboards")
 
         projectnames = [p['name'] for p in projectlist]
@@ -208,10 +232,11 @@ def main():
 
 
 
-if __name__ == "__main__":
+def main_app():
+    """Main application logic - only accessible when authenticated."""
     _run_installation_if_streamlit_env()  # Ensure Java/Gradle are installed
     init_session()
-    rerun_flag_check_function_calls() 
+    rerun_flag_check_function_calls()
     panel()
     main()
 
@@ -224,3 +249,22 @@ if __name__ == "__main__":
         """,
         unsafe_allow_html=True,
     )
+
+
+if __name__ == "__main__":
+    # Check if user is already authenticated
+    if auth.is_authenticated():
+        # User is already logged in - go directly to main app
+        main_app()
+    else:
+        # User not authenticated - show login/signup page
+        name, authentication_status, username = auth.render_auth_page()
+
+        if authentication_status:
+            # User just authenticated - store info and run app
+            st.session_state['username'] = username
+            st.session_state['name'] = name
+            st.rerun()  # Rerun to show app without auth page
+
+        elif authentication_status == False:
+            st.error('Username is incorrect or not found. Please check your username or sign up.')

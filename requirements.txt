@@ -7,3 +7,4 @@ supabase
 num2words
 streamlit-tree-select
 networkx
+toml
