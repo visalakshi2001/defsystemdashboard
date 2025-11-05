@@ -15,12 +15,12 @@ def render(project: dict) -> None:
 
     if not os.path.exists(csv_path):
         st.info("TripleCount.json data is not available – upload it via **🪄 Edit Data**")
-        return
-
-    tc_df = pd.read_csv(csv_path)
-    if "tripleCount" in tc_df.columns:
-        cnt = tc_df["tripleCount"].iloc[0]
-        st.markdown(f"#### RDF Triple Count: :blue[{cnt}]", unsafe_allow_html=True)
+        # return
+    else:
+        tc_df = pd.read_csv(csv_path)
+        if "tripleCount" in tc_df.columns:
+            cnt = tc_df["tripleCount"].iloc[0]
+            st.markdown(f"#### RDF Triple Count: :blue[{cnt}]", unsafe_allow_html=True)
 
     # Tab‑to‑file reference table (profile-aware)
     profile_name = project.get("profile")
