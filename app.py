@@ -175,10 +175,10 @@ def panel():
         st.caption("<span style='color: rgba(0,0,0,1);'>Dashboard Preferences</span>", unsafe_allow_html=True)
         if st.button("New project", icon="💼", use_container_width=True):
             build_oml_form()
-        #### HIDDEN UNTIL NECESSARY
+        #### START: HIDE THIS BLOCK IF YOU DO NOT WANT JSON BASED PROJECT CREATION FUNCTIONALITY (vvvv)
         if st.button("New project using JSON files", icon="🆕", use_container_width=True):
             new_project_from_json_form()
-            # st.info("The JSON-based creation flow will be implemented in the next step.")
+        #### END: HIDE THIS BLOCK IF YOU DO NOT WANT JSON BASED PROJECT CREATION FUNCTIONALITY (^^^^)
         if st.button("Edit project", icon="✒️", use_container_width=True):
             project_form(mode="crud_dashboard")
         

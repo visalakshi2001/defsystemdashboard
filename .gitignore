@@ -8,3 +8,5 @@ omltemplateproject/.gradle
 omltemplateproject/build
 
 .streamlit/secrets.toml
+
+_auth
